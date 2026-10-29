@@ -1,0 +1,23 @@
+{
+  "id": "/Lexicom/honorarios/",
+  "name": "Portal Honorarios Lexicom",
+  "short_name": "Honorarios",
+  "start_url": "/Lexicom/honorarios/",
+  "scope": "/Lexicom/honorarios/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0284c7",
+  "icons": [
+    {
+      "src": "descarga.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "descarga.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

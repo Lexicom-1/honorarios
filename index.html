@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sistema de Asistencia RRHH</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2838/2838912.png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 15px;
+      background: #f1f5f9;
+      color: #334155;
+    }
+    .contenedor {
+      width: 100%;
+      max-width: 450px;
+      margin: auto;
+      background: white;
+      padding: 22px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+      box-sizing: border-box;
+    }
+    h2, h3, h4 { text-align: center; margin-top: 5px; color: #0f172a; }
+    label { font-size: 12px; font-weight: bold; color: #475569; display: block; margin-top: 8px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #1a73e8;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    button:hover { background: #1557b0; }
+    button:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-perfil { background: #475569; font-size: 14px; padding: 10px; }
+    .btn-secundario { background: #64748b; font-size: 14px; }
+    #mensaje {
+      margin-top: 15px;
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      display: none;
+      font-size: 14px;
+    }
+    #gpsResultado { margin-top: 10px; text-align: center; font-size: 13px; color: #64748b; }
+    .caja-perfil {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    .pie-registro {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h2 id="tituloPortal">Sistema de Asistencia</h2>
+    
+    <div id="usuarioAutenticado" style="display:none; text-align:center; margin-bottom:12px; color:#16a34a; font-weight:bold; font-size:14px;"></div>
+    
+    <!-- Botón perfil -->
+    <div id="panelAccionesPostLogin" style="display:none; margin-bottom:12px;">
+      <button class="btn-perfil" onclick="abrirModalPerfil()">👤 Mis Datos y Cuenta Bancaria</button>
+    </div>
+
+    <!-- Panel de Perfil y Datos Bancarios -->
+    <div id="modalPerfil" class="caja-perfil" style="display:none;">
+      <h3 style="margin-top:0;">Mi Perfil y Datos de Abono</h3>
+      <p style="font-size:12px; color:#64748b; margin-top:-5px; text-align:center;">
+        Completa tus datos para el pago por Recursos Humanos.
+      </p>
+
+      <label>Sede Asignada:</label>
+      <select id="perfilSede" disabled style="background:#e2e8f0; cursor:not-allowed;"></select>
+
+      <label>Celular de Contacto:</label>
+      <input id="perfilCelular" type="tel" placeholder="Ej. 987654321">
+
+      <label>Dirección de Domicilio:</label>
+      <input id="perfilDireccion" type="text" placeholder="Av. / Calle / Distrito">
+
+      <hr style="margin:12px 0; border:0; border-top:1px solid #cbd5e1;">
+      <h4 style="margin:5px 0 10px 0; text-align:left; color:#1e293b;">Datos de Cuenta Bancaria</h4>
+
+      <label>Entidad Financiera (Banco):</label>
+      <select id="perfilBanco">
+        <option value="">-- Selecciona tu banco --</option>
+        <option value="BCP">BCP (Banco de Crédito del Perú)</option>
+        <option value="BBVA">BBVA</option>
+        <option value="INTERBANK">Interbank</option>
+        <option value="SCOTIABANK">Scotiabank</option>
+        <option value="BANCO DE LA NACION">Banco de la Nación</option>
+        <option value="BANBIF">BanBif</option>
+        <option value="PICHINCHA">Banco Pichincha</option>
+        <option value="GNB">Banco GNB</option>
+        <option value="FALABELLA">Banco Falabella</option>
+        <option value="RIPLEY">Banco Ripley</option>
+        <option value="MIBANCO">Mibanco</option>
+        <option value="CAJA AREQUIPA">Caja Arequipa</option>
+        <option value="CAJA HUANCAYO">Caja Huancayo</option>
+        <option value="CAJA PIURA">Caja Piura</option>
+        <option value="CAJA CUSCO">Caja Cusco</option>
+        <option value="OTRO">Otro / Otra Entidad Financiera</option>
+      </select>
+
+      <label>Tipo de Cuenta:</label>
+      <select id="perfilTipoCuenta">
+        <option value="AHORROS">Cuenta de Ahorros</option>
+        <option value="CORRIENTE">Cuenta Corriente</option>
+        <option value="SUELDO">Cuenta Sueldo</option>
+      </select>
+
+      <label>Número de Cuenta:</label>
+      <input id="perfilNumCuenta" type="text" placeholder="N° de cuenta bancaria">
+
+      <label>Código Interbancario (CCI - 20 dígitos):</label>
+      <input id="perfilCci" type="text" maxlength="20" placeholder="00219400234567891234">
+
+      <button onclick="guardarDatosPerfil()" style="background:#16a34a; margin-top:5px;">💾 Guardar Mis Datos</button>
+      <button onclick="cerrarModalPerfil()" class="btn-secundario">Cerrar</button>
+    </div>
+
+    <!-- Bloque Login -->
+    <div id="loginPanel">
+      <label id="lblLogin" style="margin-top:0;">Ingresa tu documento de identidad:</label>
+      <input id="docLogin" type="tel" maxlength="11" placeholder="DNI (8 dígitos) o RUC">
+      <button onclick="enviarOTP()">Enviar código de acceso</button>
+    </div>
+
+    <!-- Bloque OTP -->
+    <div id="otpPanel" style="display:none;">
+      <label>Código de verificación recibido en tu correo:</label>
+      <input id="otp" type="text" maxlength="6" placeholder="Código de 6 dígitos">
+      <button onclick="validarCodigo()">Validar código e ingresar</button>
+    </div>
+
+    <!-- Bloque Registro Nuevo -->
+    <div id="registroPanel" style="display:none;">
+      <h3 id="tituloRegistro">Registro de Nuevo Trabajador</h3>
+      <label>DNI o RUC:</label>
+      <input id="regDni" placeholder="DNI (8 dígitos) o RUC" maxlength="11">
+      
+      <label>Correo Electrónico:</label>
+      <input id="regCorreo" type="email" placeholder="correo@ejemplo.com">
+      
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1;">
+          <label>Nombres:</label>
+          <input id="regNombres" placeholder="Nombres">
+        </div>
+        <div style="flex:1;">
+          <label>Apellidos:</label>
+          <input id="regApellidos" placeholder="Apellidos">
+        </div>
+      </div>
+      
+      <label>Celular:</label>
+      <input id="regCelular" type="tel" placeholder="987654321" maxlength="9">
+
+      <label>Sede de Trabajo:</label>
+      <select id="regSede"></select>
+
+      <div id="campoServicioExtra" style="display:none;">
+        <label>Descripción del Servicio / Cargo:</label>
+        <input id="regServicio" placeholder="Ej. Soporte TI, Contador externo">
+      </div>
+      
+      <button onclick="registrarNuevo()" style="background:#059669; margin-top:5px;">Enviar Solicitud a RRHH</button>
+    </div>
+
+    <!-- Bloque Asistencia / Actividad -->
+    <div id="marcajePanel" style="display:none;">
+      <div id="bloquePlanilla">
+        <button onclick="obtenerUbicacion()">📍 Obtener ubicación GPS</button>
+        <div id="gpsResultado"></div>
+      </div>
+
+      <div id="bloqueHonorarios" style="display:none;">
+        <label>Sede / Modalidad de hoy:</label>
+        <select id="sedeActividad"></select>
+
+        <label>Labor o entregable de hoy:</label>
+        <textarea id="descripcionActividad" rows="3" placeholder="Detalle de actividades desarrolladas hoy..."></textarea>
+      </div>
+
+      <input type="file" id="cameraInput" accept="image/*" capture="user" style="display:none;" onchange="procesarFoto(event)">
+      <button id="btnAbrirCamara" onclick="abrirCamara()" style="display:none; background:#0f9d58;">📷 Tomar Selfie / Foto de Evidencia</button>
+
+      <img id="previewSelfie" style="display:none; width:100%; border-radius:8px; margin-top:10px; border: 1px solid #ddd;">
+      <canvas id="canvasCompresor" style="display:none;"></canvas>
+      <div id="fotoEstado" style="color:#16a34a; font-weight:bold; margin-top:8px; text-align:center;"></div>
+      <br>
+
+      <div id="botonesMarcajePlanilla">
+        <button id="btnIngreso" onclick="ejecutarMarcaje('INGRESO')" style="display:none;">Registrar Ingreso</button>
+        <button id="btnSalida" onclick="ejecutarMarcaje('SALIDA')" style="display:none;">Registrar Salida</button>
+      </div>
+
+      <button id="btnGuardarHonorarios" onclick="ejecutarMarcajeHonorarios()" style="display:none; background:#0284c7;">✅ Registrar actividad de hoy</button>
+    </div>
+
+    <div id="mensaje"></div>
+
+    <div id="pieRegistro" class="pie-registro">
+      <button id="btnAlternarRegistro" class="btn-secundario" onclick="alternarRegistro()">Registrarse</button>
+    </div>
+  </div>
+
+  <script>
+    // URL DE TU WEB APP EN GOOGLE APPS SCRIPT
+    const API_URL = "https://script.google.com/macros/s/AKfycbznyYRoE6A9dH6dGPlNYhN9QunCgc9coY7e578WspkOQl_ULHSdUaF4HPoiJ1naUW0I/exec";
+
+    const isHonorarios = true;
+    let correoUsuario = null;
+    let docUsuario = null;
+    let modoRegistro = false;
+    let latitudActual = null;
+    let longitudActual = null;
+    let selfieActual = null;
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(console.error);
+    }
+
+    // Llamada fetch segura compatible con CORS
+    async function llamarAPI(payload) {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    }
+
+    function obtenerDeviceId() {
+      const storageKey = isHonorarios ? "honorarios_device_token" : "asistencia_device_token";
+      let devId = localStorage.getItem(storageKey);
+      if (!devId) {
+        const ua = navigator.userAgent;
+        let modelo = /android/i.test(ua) ? "Android" : (/iPhone|iPad/i.test(ua) ? "iPhone" : "Movil");
+        const randomHex = Math.random().toString(16).substring(2, 10).toUpperCase();
+        devId = modelo + "_" + randomHex;
+        localStorage.setItem(storageKey, devId);
+      }
+      return devId;
+    }
+
+    function mostrarMensaje(texto, tipo) {
+      const msg = document.getElementById("mensaje");
+      msg.style.display = "block";
+      msg.innerHTML = texto;
+      msg.style.background = (tipo === "ok") ? "#d1fae5" : "#fee2e2";
+      msg.style.color = (tipo === "ok") ? "#065f46" : "#991b1b";
+    }
+
+    window.onload = async function() {
+      if (isHonorarios) {
+        document.getElementById("tituloPortal").innerText = "Portal de Honorarios";
+        document.getElementById("lblLogin").innerText = "Ingresa tu documento (DNI o RUC):";
+        document.getElementById("btnAlternarRegistro").innerText = "Registrarse como nuevo locador";
+        document.getElementById("tituloRegistro").innerText = "Registro de Nuevo Locador";
+        document.getElementById("campoServicioExtra").style.display = "block";
+      }
+
+      // Cargar sedes dinámicas desde la API
+      try {
+        const res = await llamarAPI({ accion: "obtenerSedes" });
+        if (res.ok && res.sedes) {
+          let html = "";
+          res.sedes.forEach(s => html += `<option value="${s.codigo}">${s.codigo} - ${s.nombre}</option>`);
+          document.getElementById("regSede").innerHTML = html;
+          document.getElementById("perfilSede").innerHTML = html;
+          document.getElementById("sedeActividad").innerHTML = html;
+        }
+      } catch (err) {
+        console.error("Error al cargar sedes:", err);
+      }
+    };
+
+    function alternarRegistro() {
+      modoRegistro = !modoRegistro;
+      document.getElementById("mensaje").style.display = "none";
+      document.getElementById("loginPanel").style.display = modoRegistro ? "none" : "block";
+      document.getElementById("otpPanel").style.display = "none";
+      document.getElementById("registroPanel").style.display = modoRegistro ? "block" : "none";
+      document.getElementById("btnAlternarRegistro").innerText = modoRegistro ? "← Ya tengo cuenta (Volver)" : "Registrarse";
+    }
+
+    async function enviarOTP() {
+      const doc = document.getElementById("docLogin").value.trim();
+      if (!doc) return mostrarMensaje("Ingresa tu número de documento", "error");
+
+      mostrarMensaje("Verificando documento y enviando código...", "ok");
+      try {
+        const res = await llamarAPI({
+          accion: isHonorarios ? "enviarOTPHonorarios" : "enviarOTP",
+          dni: doc,
+          dniRuc: doc
+        });
+        if (res.ok) {
+          docUsuario = doc;
+          correoUsuario = res.correo;
+          document.getElementById("otpPanel").style.display = "block";
+          mostrarMensaje(res.mensaje, "ok");
+        } else {
+          mostrarMensaje(res.mensaje, "error");
+        }
+      } catch (err) {
+        mostrarMensaje("Error al conectar: " + err.message, "error");
+      }
+    }
+
+    async function validarCodigo() {
+      const codigo = document.getElementById("otp").value.trim();
+      if (!codigo) return mostrarMensaje("Ingresa el código OTP", "error");
+
+      mostrarMensaje("Validando código...", "ok");
+      const deviceId = obtenerDeviceId();
+
+      try {
+        const res = await llamarAPI({
+          accion: isHonorarios ? "validarOTPHonorarios" : "validarOTP",
+          correo: correoUsuario,
+          codigo: codigo,
+          deviceId: deviceId
+        });
+
+        if (res.ok) {
+          document.getElementById("loginPanel").style.display = "none";
+          document.getElementById("otpPanel").style.display = "none";
+          document.getElementById("pieRegistro").style.display = "none";
+
+          const userLabel = document.getElementById("usuarioAutenticado");
+          userLabel.style.display = "block";
+          userLabel.innerHTML = `✅ Identificado: ${docUsuario}<br><small style="color:#64748b;">${correoUsuario}</small>`;
+
+          document.getElementById("panelAccionesPostLogin").style.display = "block";
+          document.getElementById("marcajePanel").style.display = "block";
+
+          if (isHonorarios) {
+            document.getElementById("bloquePlanilla").style.display = "none";
+            document.getElementById("bloqueHonorarios").style.display = "block";
+            document.getElementById("btnAbrirCamara").style.display = "block";
+            document.getElementById("btnGuardarHonorarios").style.display = "block";
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(p => {
+                latitudActual = p.coords.latitude;
+                longitudActual = p.coords.longitude;
+              }, null, { enableHighAccuracy: true });
+            }
+          } else {
+            const estadoRes = await llamarAPI({ accion: "obtenerEstadoHoy", correo: correoUsuario });
+            configurarBotonesPlanilla(estadoRes.estado);
+          }
+        } else {
+          mostrarMensaje(res.mensaje, "error");
+        }
+      } catch (err) {
+        mostrarMensaje("Error al validar: " + err.message, "error");
+      }
+    }
+
+    async function abrirModalPerfil() {
+      mostrarMensaje("Cargando perfil...", "ok");
+      try {
+        const res = await llamarAPI({
+          accion: isHonorarios ? "obtenerPerfilHonorarios" : "obtenerPerfil",
+          correo: correoUsuario
+        });
+        document.getElementById("mensaje").style.display = "none";
+        if (res.ok && res.datos) {
+          document.getElementById("perfilCelular").value = res.datos.celular || "";
+          document.getElementById("perfilDireccion").value = res.datos.direccion || "";
+          document.getElementById("perfilBanco").value = res.datos.banco || "";
+          document.getElementById("perfilTipoCuenta").value = res.datos.tipoCuenta || "AHORROS";
+          document.getElementById("perfilNumCuenta").value = res.datos.numCuenta || "";
+          document.getElementById("perfilCci").value = res.datos.cci || "";
+          if (res.datos.sede) document.getElementById("perfilSede").value = res.datos.sede;
+        }
+        document.getElementById("modalPerfil").style.display = "block";
+      } catch (err) {
+        mostrarMensaje("Error al consultar perfil: " + err.message, "error");
+      }
+    }
+
+    function cerrarModalPerfil() { document.getElementById("modalPerfil").style.display = "none"; }
+
+    async function guardarDatosPerfil() {
+      const cci = document.getElementById("perfilCci").value.trim();
+      if (cci && cci.length !== 20) return mostrarMensaje("El CCI debe tener exactamente 20 dígitos", "error");
+
+      mostrarMensaje("Guardando cambios...", "ok");
+      const datos = {
+        correo: correoUsuario,
+        celular: document.getElementById("perfilCelular").value.trim(),
+        direccion: document.getElementById("perfilDireccion").value.trim(),
+        banco: document.getElementById("perfilBanco").value.trim(),
+        tipoCuenta: document.getElementById("perfilTipoCuenta").value.trim(),
+        numCuenta: document.getElementById("perfilNumCuenta").value.trim(),
+        cci: cci
+      };
+
+      try {
+        const res = await llamarAPI({
+          accion: isHonorarios ? "actualizarPerfilHonorarios" : "actualizarPerfil",
+          correo: correoUsuario,
+          datos: datos
+        });
+        mostrarMensaje(res.mensaje, res.ok ? "ok" : "error");
+        if (res.ok) cerrarModalPerfil();
+      } catch (err) {
+        mostrarMensaje("Error al guardar: " + err.message, "error");
+      }
+    }
+
+    function obtenerUbicacion() {
+      if (!navigator.geolocation) return mostrarMensaje("Navegador no soporta GPS", "error");
+      navigator.geolocation.getCurrentPosition(
+        p => {
+          latitudActual = p.coords.latitude;
+          longitudActual = p.coords.longitude;
+          document.getElementById("gpsResultado").innerHTML = `📍 Lat: ${latitudActual.toFixed(6)} | Lon: ${longitudActual.toFixed(6)}`;
+          document.querySelector('button[onclick="obtenerUbicacion()"]').style.display = "none";
+          document.getElementById("btnAbrirCamara").style.display = "block";
+        },
+        () => mostrarMensaje("Activa el GPS de tu celular", "error"),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+
+    function abrirCamara() { document.getElementById("cameraInput").click(); }
+
+    function procesarFoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      mostrarMensaje("Procesando imagen...", "ok");
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 800;
+          let w = img.width, h = img.height;
+          if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+
+          const canvas = document.getElementById("canvasCompresor");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+
+          selfieActual = canvas.toDataURL("image/jpeg", 0.8);
+          const preview = document.getElementById("previewSelfie");
+          preview.src = selfieActual;
+          preview.style.display = "block";
+          document.getElementById("fotoEstado").innerHTML = "✅ Selfie lista";
+          document.getElementById("btnAbrirCamara").innerHTML = "🔄 Tomar otra foto";
+          document.getElementById("mensaje").style.display = "none";
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function ejecutarMarcaje(tipo) {
+      if (!latitudActual || !longitudActual) return mostrarMensaje("Obtén tu ubicación GPS", "error");
+      if (!selfieActual) return mostrarMensaje("Tómate una selfie", "error");
+
+      const boton = (tipo === "INGRESO") ? document.getElementById("btnIngreso") : document.getElementById("btnSalida");
+      boton.disabled = true;
+      boton.innerHTML = "Subiendo foto...";
+
+      try {
+        const fotoRes = await llamarAPI({ accion: "guardarSelfie", correo: correoUsuario, imagenBase64: selfieActual });
+        boton.innerHTML = `Marcando ${tipo.toLowerCase()}...`;
+
+        const res = await llamarAPI({
+          accion: "marcarAsistencia",
+          correo: correoUsuario,
+          tipo: tipo,
+          latitud: latitudActual,
+          longitud: longitudActual,
+          urlFoto: fotoRes.url,
+          deviceId: obtenerDeviceId()
+        });
+
+        mostrarMensaje(res.mensaje, res.ok ? "ok" : "error");
+        if (res.ok) {
+          boton.innerHTML = `✅ ${tipo} Registrado`;
+          boton.style.background = "#16a34a";
+          setTimeout(() => {
+            if (tipo === "INGRESO") {
+              document.getElementById("btnIngreso").style.display = "none";
+              document.getElementById("btnSalida").style.display = "block";
+            } else {
+              document.getElementById("marcajePanel").innerHTML = "<h2 style='color:#16a34a;'>✅ Jornada completada</h2>";
+            }
+          }, 1200);
+        } else {
+          boton.disabled = false;
+          boton.innerHTML = `Registrar ${tipo}`;
+        }
+      } catch (err) {
+        boton.disabled = false;
+        mostrarMensaje("Error: " + err.message, "error");
+      }
+    }
+
+    async function ejecutarMarcajeHonorarios() {
+      const desc = document.getElementById("descripcionActividad").value.trim();
+      if (!desc) return mostrarMensaje("Escribe la labor realizada hoy", "error");
+      if (!selfieActual) return mostrarMensaje("Tómate una selfie / foto de evidencia", "error");
+
+      const boton = document.getElementById("btnGuardarHonorarios");
+      boton.disabled = true;
+      boton.innerHTML = "Subiendo foto...";
+
+      try {
+        const fotoRes = await llamarAPI({ accion: "guardarSelfie", correo: correoUsuario, imagenBase64: selfieActual });
+        boton.innerHTML = "Guardando actividad...";
+
+        const res = await llamarAPI({
+          accion: "registrarActividadHonorarios",
+          datos: {
+            dniRuc: docUsuario,
+            correo: correoUsuario,
+            sede: document.getElementById("sedeActividad").value,
+            descripcionServicio: desc,
+            latitud: latitudActual || "",
+            longitud: longitudActual || "",
+            selfieUrl: fotoRes.url,
+            deviceId: obtenerDeviceId()
+          }
+        });
+
+        mostrarMensaje(res.mensaje, res.ok ? "ok" : "error");
+        if (res.ok) {
+          document.getElementById("descripcionActividad").value = "";
+          selfieActual = null;
+          document.getElementById("previewSelfie").style.display = "none";
+          document.getElementById("fotoEstado").innerHTML = "";
+          boton.disabled = false;
+          boton.innerHTML = "✅ Registrar actividad de hoy";
+        } else {
+          boton.disabled = false;
+          boton.innerHTML = "✅ Registrar actividad de hoy";
+        }
+      } catch (err) {
+        boton.disabled = false;
+        mostrarMensaje("Error: " + err.message, "error");
+      }
+    }
+
+    async function registrarNuevo() {
+      const dni = document.getElementById("regDni").value.trim();
+      const correo = document.getElementById("regCorreo").value.trim();
+      const nombres = document.getElementById("regNombres").value.trim();
+      const apellidos = document.getElementById("regApellidos").value.trim();
+
+      if (!dni || !correo || !nombres || !apellidos) return mostrarMensaje("Completa los campos obligatorios", "error");
+
+      mostrarMensaje("Enviando solicitud a RRHH...", "ok");
+      const datos = {
+        dni: dni,
+        dniRuc: dni,
+        correo: correo,
+        nombres: nombres,
+        apellidos: apellidos,
+        celular: document.getElementById("regCelular").value.trim(),
+        sede: document.getElementById("regSede").value,
+        descripcionServicio: document.getElementById("regServicio").value.trim()
+      };
+
+      try {
+        const res = await llamarAPI({
+          accion: isHonorarios ? "registrarSolicitudHonorarios" : "registrarSolicitudTrabajador",
+          datos: datos
+        });
+        mostrarMensaje(res.mensaje, res.ok ? "ok" : "error");
+        if (res.ok) setTimeout(alternarRegistro, 2000);
+      } catch (err) {
+        mostrarMensaje("Error: " + err.message, "error");
+      }
+    }
+
+    function configurarBotonesPlanilla(estado) {
+      const btnIngreso = document.getElementById("btnIngreso");
+      const btnSalida = document.getElementById("btnSalida");
+      if (estado === "INGRESO") {
+        btnIngreso.style.display = "block";
+        btnSalida.style.display = "none";
+      } else if (estado === "SALIDA") {
+        btnIngreso.style.display = "none";
+        btnSalida.style.display = "block";
+      } else {
+        document.getElementById("marcajePanel").innerHTML = "<h2 style='color:#16a34a;'>✅ Jornada completada</h2>";
+      }
+    }
+  </script>
+</body>
+</html>
